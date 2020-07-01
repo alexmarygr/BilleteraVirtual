@@ -43,7 +43,6 @@ public class BilleteraService {
         Cuenta cuenta = billetera.getCuenta(moneda);
 
         Transaccion transaccion = new Transaccion();
-        //transaccion.setCuenta(cuenta);
         transaccion.setMoneda(moneda);
         transaccion.setFecha(new Date());
         transaccion.setConceptoOperacion(conceptoOperacion);

@@ -1,9 +1,7 @@
 package ar.com.ada.api.billeteravirtual.security;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.Base64;
 
