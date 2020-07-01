@@ -100,6 +100,38 @@ public class BilleteraService {
      * 
      */
 
+    public void enviarSaldo(BigDecimal importe, String moneda, Integer billeteraOrigenId, Integer billeteraDestinoId, String concepto, String detalle) {
+
+        /*
+         * Metodo: enviar plata 2.1-- recibir un importe, la moneda en la que va a estar
+         * ese importe recibir una billetera de origen y otra de destino 2.2--
+         * actualizar los saldos de las cuentas (a una se le suma y a la otra se le
+         * resta) 2.3-- generar dos transacciones
+         */
+
+        Billetera billeteraSaliente = this.buscarPorId(billeteraOrigenId);
+        Billetera billeteraEntrante = this.buscarPorId(billeteraDestinoId);
+
+        Cuenta cuentaSaliente = billeteraSaliente.getCuenta(moneda);
+        Cuenta cuentaEntrante = billeteraEntrante.getCuenta(moneda);
+
+        Transaccion tSaliente = new Transaccion();
+        Transaccion tEntrante = new Transaccion();
+
+        tSaliente = cuentaSaliente.generarTransaccion(concepto, detalle, importe, 1);
+        tSaliente.setaCuentaId(cuentaEntrante.getCuentaId());
+        tSaliente.setaUsuarioId(billeteraEntrante.getPersona().getUsuario().getUsuarioId());
+
+        tEntrante = cuentaEntrante.generarTransaccion(concepto, detalle, importe, 0);
+        tEntrante.setDeCuentaId(cuentaSaliente.getCuentaId());
+        tEntrante.setDeUsuarioId(billeteraSaliente.getPersona().getUsuario().getUsuarioId());
+
+        cuentaSaliente.agregarTransaccion(tSaliente);
+        cuentaEntrante.agregarTransaccion(tEntrante);
+
+
+    }
+
      
 
 
