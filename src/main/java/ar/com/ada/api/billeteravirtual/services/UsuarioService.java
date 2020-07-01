@@ -23,7 +23,7 @@ public class UsuarioService {
     BilleteraService billeteraService;
 
 	public Usuario buscarPorUsername(String username) {
-		return null;
+		return repo.findByUsername(username);
 	}
 
 	public void login(String username, String password) {
@@ -40,7 +40,9 @@ public class UsuarioService {
     2.2-- vamos a validar los datos
     2.3-- devolver un verdadero o falso
     */
-    public Usuario crearUsuario(String nombre, int pais, int tipoDocumento, String documento, Date fechaNacimiento, String email, String password){
+    public Usuario crearUsuario(String nombre, int pais, int tipoDocumento, String documento, Date fechaNacimiento,
+            String email, String password) {
+
         Persona persona = new Persona();
         persona.setNombre(nombre);
         persona.setPaisId(pais);
@@ -51,32 +53,34 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setUsername(email);
         usuario.setEmail(email);
-        usuario.setPassword(Crypto.encrypt(password,email));
+        usuario.setPassword(Crypto.encrypt(password, email));
 
         persona.setUsuario(usuario);
 
+        Billetera billetera = new Billetera(); // Se crea la billetera
+
+        BigDecimal saldoInicial = new BigDecimal(0);
+
+        Cuenta cuentaPesos = new Cuenta(); // Se crea cuenta en pesos
+        cuentaPesos.setSaldo(saldoInicial);
+        cuentaPesos.setMoneda("ARS");
+
+        Cuenta cuentaDolares = new Cuenta(); // Se crea cuenta en dolares
+        cuentaDolares.setSaldo(saldoInicial);
+        cuentaDolares.setMoneda("USD");
+
+        // Les seteo las cuentas a billetera
+        billetera.agregarCuenta(cuentaPesos);
+        billetera.agregarCuenta(cuentaDolares);
+
+        persona.setBilletera(billetera);// Se le da la billetera a la persona
+
         personaService.grabar(persona);
-
-        Billetera billetera = new Billetera();
-
-        Cuenta pesos = new Cuenta();
-
-        pesos.setSaldo(new BigDecimal(0));
-        pesos.setMoneda("ARS");
-
-        Cuenta dolares = new Cuenta();
-
-        dolares.setSaldo(new BigDecimal(0));
-        dolares.setMoneda("USD");
-
-        billetera.agregarCuenta(pesos);
-        billetera.agregarCuenta(dolares);
-
-        persona.setBilletera(billetera);
 
         billeteraService.grabar(billetera);
 
-        billeteraService.cargarSaldo(new BigDecimal(500), "ARS", billetera.getBilleteraId(), "regalo", "Bienvenida por creacion de usuario");
+        billeteraService.cargarSaldo(new BigDecimal(500), "ARS", billetera.getBilleteraId(), "regalo",
+                "Bienvenida por creacion de usuario");
 
         return usuario;
     }
