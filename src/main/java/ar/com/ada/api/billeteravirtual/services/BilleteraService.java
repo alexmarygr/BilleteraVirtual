@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import ar.com.ada.api.billeteravirtual.entities.Billetera;
 import ar.com.ada.api.billeteravirtual.entities.Cuenta;
 import ar.com.ada.api.billeteravirtual.entities.Transaccion;
+import ar.com.ada.api.billeteravirtual.entities.Usuario;
 import ar.com.ada.api.billeteravirtual.repos.BilleteraRepository;
 
 @Service
@@ -16,6 +17,9 @@ public class BilleteraService {
 
     @Autowired
     BilleteraRepository billeteraRepository;
+
+    @Autowired
+    UsuarioService usuarioService;
 
     public void grabar(Billetera billetera){
         billeteraRepository.save(billetera);
@@ -130,7 +134,14 @@ public class BilleteraService {
 
 
     }
+    public void enviarSaldo(BigDecimal importe, String moneda, Integer billeteraOrigenId, String email, String concepto,
+            String detalle) {
 
+        Usuario usuarioDestino = usuarioService.buscarPorEmail(email);
+        this.enviarSaldo(importe, moneda, billeteraOrigenId,
+        usuarioDestino.getPersona().getBilletera().getBilleteraId(), concepto, detalle);
+
+    }
      
 
 

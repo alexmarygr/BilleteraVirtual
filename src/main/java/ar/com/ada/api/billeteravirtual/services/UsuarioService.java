@@ -83,17 +83,23 @@ public class UsuarioService {
         return repo.findByUsername(username);
       }
     
-      public void login(String username, String password) {
+    public void login(String username, String password) {
         /**
          * Metodo IniciarSesion recibe usuario y contraseña validar usuario y contraseña
          */
     
-        Usuario u = buscarPorUsername(username);
+      Usuario u = buscarPorUsername(username);
     
-        if (u == null || !u.getPassword().equals(Crypto.encrypt(password, u.getUsername()))) {
+      if (u == null || !u.getPassword().equals(Crypto.encrypt(password, u.getUsername()))) {
     
-          throw new BadCredentialsException("Usuario o contraseña invalida");
-        }
+        throw new BadCredentialsException("Usuario o contraseña invalida");
       }
+    }
+
+
+    public Usuario buscarPorEmail(String email){
+
+      return repo.findByEmail(email);
+  }
 
 }
