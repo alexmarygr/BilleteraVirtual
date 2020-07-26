@@ -1,8 +1,8 @@
 package ar.com.ada.api.billeteravirtual.security;
 
-import java.math.BigInteger;
+/*import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
-import java.security.spec.KeySpec;
+*/import java.security.spec.KeySpec;
 import java.util.Base64;
 
 import javax.crypto.Cipher;
@@ -85,7 +85,7 @@ public class Crypto {
         return null;
     }
 
-    private static String toHex(byte[] array) throws NoSuchAlgorithmException {
+    /* private static String toHex(byte[] array) throws NoSuchAlgorithmException {
         BigInteger bi = new BigInteger(1, array);
         String hex = bi.toString(16);
         int paddingLength = (array.length * 2) - hex.length();
@@ -94,5 +94,5 @@ public class Crypto {
         } else {
             return hex;
         }
-    }
+    } */
 }

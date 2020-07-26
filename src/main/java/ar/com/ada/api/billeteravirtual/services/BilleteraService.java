@@ -10,6 +10,7 @@ import ar.com.ada.api.billeteravirtual.entities.Billetera;
 import ar.com.ada.api.billeteravirtual.entities.Cuenta;
 import ar.com.ada.api.billeteravirtual.entities.Transaccion;
 import ar.com.ada.api.billeteravirtual.entities.Usuario;
+import ar.com.ada.api.billeteravirtual.entities.Transaccion.ResultadoTransaccionEnum;
 import ar.com.ada.api.billeteravirtual.repos.BilleteraRepository;
 
 @Service
@@ -100,10 +101,11 @@ public class BilleteraService {
      * generar 2 transacciones
      * 
      * ver delegaciones sobre entidades
+     * @return 
      * 
      */
 
-    public void enviarSaldo(BigDecimal importe, String moneda, Integer billeteraOrigenId, Integer billeteraDestinoId, String concepto, String detalle) {
+    public ResultadoTransaccionEnum enviarSaldo(BigDecimal importe, String moneda, Integer billeteraOrigenId, Integer billeteraDestinoId, String concepto, String detalle) {
 
         /*
          * Metodo: enviar plata 2.1-- recibir un importe, la moneda en la que va a estar
@@ -131,6 +133,7 @@ public class BilleteraService {
 
         cuentaSaliente.agregarTransaccion(tSaliente);
         cuentaEntrante.agregarTransaccion(tEntrante);
+        return ResultadoTransaccionEnum.INICIADA;
 
 
     }

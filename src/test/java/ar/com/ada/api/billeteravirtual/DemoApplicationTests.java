@@ -12,12 +12,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ar.com.ada.api.billeteravirtual.entities.Usuario;
 import ar.com.ada.api.billeteravirtual.security.Crypto;
 import ar.com.ada.api.billeteravirtual.services.UsuarioService;
+import ar.com.ada.api.billeteravirtual.entities.Transaccion.ResultadoTransaccionEnum;
+import ar.com.ada.api.billeteravirtual.services.*;
 
 @SpringBootTest
 class DemoApplicationTests {
 	
 	@Autowired
 	UsuarioService usuarioService;
+
+	@Autowired
+	BilleteraService billeteraService;
 
 	@Test
 	void contextLoads() {
@@ -83,16 +88,104 @@ class DemoApplicationTests {
 	@Test
 	void CrearUsuarioTest() {
 
-		Usuario usuario = usuarioService.crearUsuario("Karen", 32, 5 , "21231123", new Date(), "karen@gmail.com", "a12345");
-		
-		//System.out.println("SALDO de usuario: " + usuario.getPersona().getBilletera().getCuenta("ARS").getSaldo());
+		Usuario usuario = usuarioService.crearUsuario("Karen", 32, 5, "21231123", new Date(), "karen@gmail.com",
+				"a12345");
 
-		//Usuario usuarioVerificado = usuarioService.buscarPorUsername(usuario.getUsername());
+		// System.out.println("SALDO de usuario: " +
+		// usuario.getPersona().getBilletera().getCuenta("ARS").getSaldo());
 
-		//assertTrue(usuario.getUsuarioId() == usuarioVerificado.getUsuarioId());
-		assertTrue(usuario.getUsuarioId()==1);
-		assertTrue(usuario.getPersona().getBilletera().getCuenta("ARS").getSaldo().equals(new BigDecimal(500)));
+		// Usuario usuarioVerificado =
+		// usuarioService.buscarPorUsername(usuario.getUsername());
+
+		// assertTrue(usuario.getUsuarioId() == usuarioVerificado.getUsuarioId());
+		assertTrue(usuario.getUsuarioId() > 0);
+		assertTrue(usuario.getPersona().getBilletera().getCuenta("ARS").getSaldo().compareTo(new BigDecimal(500)) == 0);
+
 	
 	}
+
+	@Test
+	void EnviarSaldoMonedaARSTest() {
+
+		Usuario usuarioEmisor = usuarioService.crearUsuario("Karen Envia", 32, 5, "21231123", new Date(),
+				"karenenvia@gmail.com", "a12345");
+		Usuario usuarioReceptor = usuarioService.crearUsuario("Claudia Recibe", 32, 5, "21231123", new Date(),
+				"claudiarecibe@gmail.com", "a12345");
+
+		Integer borigen = usuarioEmisor.getPersona().getBilletera().getBilleteraId();
+		Integer bdestino = usuarioReceptor.getPersona().getBilletera().getBilleteraId();
+
+		BigDecimal saldoOrigen = usuarioEmisor.getPersona().getBilletera().getCuenta("ARS").getSaldo();
+		BigDecimal saldoDestino = usuarioReceptor.getPersona().getBilletera().getCuenta("ARS").getSaldo();
+
+		BigDecimal saldoAEnviar = new BigDecimal(200);
+
+		ResultadoTransaccionEnum resultado = billeteraService.enviarSaldo(saldoAEnviar, "ARS", borigen, bdestino,
+				"PRESTAMO", "ya no me debes nada");
+
+		BigDecimal saldoOrigenActualizado = billeteraService.consultarSaldo(borigen, "ARS");
+		BigDecimal saldoDestinoActualizado = billeteraService.consultarSaldo(bdestino, "ARS");
+
+		// AFIRMAMOS QUE, el saldo origen - 1200, sea igual al saldoOrigeActualizado
+		// AFIRMAMOS QUE, el saldo destino + 1200, sea igual al saldoDestinoActualizado
+		// System.out.println("SOrigen: " + saldoOrigen + " actualizado: " +
+		// saldoOrigenActualizado);
+		// System.out.println("SDestino: " + saldoDestino + " actualizado: " +
+		// saldoDestinoActualizado);
+
+		// 2 equals 2.0 => false
+		// 2.0 equals 2.0 => true
+		// 2.0 equals 2.00 => false
+		// 2.00
+		// se usa el compare, que devuelve 0 si son iguales, -1 si el primero es menor
+		// que el segundo
+		// y 1 si el primero es mayor que segundo.
+		assertTrue(resultado == ResultadoTransaccionEnum.INICIADA, "El resultado fue " + resultado);
+
+		assertTrue(saldoOrigen.subtract(saldoAEnviar).compareTo(saldoOrigenActualizado) == 0,
+				" HUBO error en la comparacion SOrigen: " + saldoOrigen + " actualizado: " + saldoOrigenActualizado);
+		assertTrue(saldoDestino.add(saldoAEnviar).compareTo(saldoDestinoActualizado) == 0,
+				" HUBO error en la comparacion SDestino: " + saldoDestino + " actualizado: " + saldoDestinoActualizado);
+
+	}
+
+	@Test
+	void EnviarSaldoMonedaUSDSinSALDOUSDTest() {
+
+		Usuario usuarioEmisor = usuarioService.crearUsuario("Karen Envia", 32, 5, "21231123", new Date(),
+				"karenenvia@gmail.com", "a12345");
+		Usuario usuarioReceptor = usuarioService.crearUsuario("Claudia Recibe", 32, 5, "21231123", new Date(),
+				"claudiarecibe@gmail.com", "a12345");
+
+		Integer borigen = usuarioEmisor.getPersona().getBilletera().getBilleteraId();
+		Integer bdestino = usuarioReceptor.getPersona().getBilletera().getBilleteraId();
+
+		BigDecimal saldoAEnviar = new BigDecimal(200);
+
+		ResultadoTransaccionEnum resultado = billeteraService.enviarSaldo(saldoAEnviar, "USD", borigen, bdestino,
+				"PRESTAMO", "ya no me debes nada");
+
+		assertTrue(resultado == ResultadoTransaccionEnum.SALDO_INSUFICIENTE, "El resultado fue " + resultado);
+
+	}
+
+	@Test
+	void EnviarSaldoNegativoTest() {
+
+		Usuario usuarioEmisor = usuarioService.crearUsuario("Karen Envia", 32, 5, "21231123", new Date(),
+				"karenenvia@gmail.com", "a12345");
+		Usuario usuarioReceptor = usuarioService.crearUsuario("Claudia Recibe", 32, 5, "21231123", new Date(),
+				"claudiarecibe@gmail.com", "a12345");
+
+		Integer borigen = usuarioEmisor.getPersona().getBilletera().getBilleteraId();
+		Integer bdestino = usuarioReceptor.getPersona().getBilletera().getBilleteraId();
+
+		ResultadoTransaccionEnum resultado = billeteraService.enviarSaldo(new BigDecimal(-1200), "ARS", borigen,
+				bdestino, "PRESTAMO", "ya no me debes nada");
+
+		assertTrue(resultado == ResultadoTransaccionEnum.ERROR_IMPORTE_NEGATIVO, "El resultado fue " + resultado);
+
+	}
+
 
 }
